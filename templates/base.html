@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Civic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+    body {
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        color: white;
+    }
+
+    .glass {
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(12px);
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: none;
+        outline: none;
+        color: black;
+    }
+
+    .btn {
+        padding: 10px;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    .btn-blue { background: #3b82f6; }
+    .btn-blue:hover { background: #2563eb; }
+
+    .btn-red { background: #ef4444; }
+    .btn-red:hover { background: #dc2626; }
+
+    .btn-green { background: #22c55e; }
+    .btn-green:hover { background: #16a34a; }
+    </style>
+</head>
+
+<body class="pt-20">
+
+    <!-- 🔥 MAIN CONTENT (FIXED — NO CENTERING) -->
+    <div class="min-h-screen px-4">
+
+        {% block content %}
+        {% endblock %}
+
+    </div>
+
+</body>
+</html>

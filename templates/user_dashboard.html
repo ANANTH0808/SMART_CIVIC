@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="max-w-7xl mx-auto pt-10">
+
+    <!-- 🔥 TOP BAR -->
+    <div class="flex justify-between items-center mb-8">
+
+        <div>
+            <h1 class="text-3xl font-bold">📊 Dashboard</h1>
+            <p class="text-gray-400 text-sm">
+                👤 {{ request.user.username }}
+            </p>
+        </div>
+
+        <!-- 🚪 LOGOUT -->
+        <a href="{% url 'logout' %}"
+           onclick="return confirm('Logout?')"
+           class="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-white shadow-lg transition">
+            🚪 Logout
+        </a>
+
+    </div>
+
+    <!-- 🔥 STATS CARDS -->
+    <div class="grid md:grid-cols-4 gap-6 mb-10">
+
+        <a href="/complaints/pending/" class="glass p-6 hover:scale-105 transition">
+            <h2 class="text-lg text-gray-300">Pending</h2>
+            <p class="text-3xl font-bold text-red-400">{{ pending }}</p>
+        </a>
+
+        <a href="/complaints/progress/" class="glass p-6 hover:scale-105 transition">
+            <h2 class="text-lg text-gray-300">In Progress</h2>
+            <p class="text-3xl font-bold text-yellow-400">{{ progress }}</p>
+        </a>
+
+        <a href="/complaints/resolved/" class="glass p-6 hover:scale-105 transition">
+            <h2 class="text-lg text-gray-300">Resolved</h2>
+            <p class="text-3xl font-bold text-green-400">{{ resolved }}</p>
+        </a>
+
+        <div class="glass p-6">
+            <h2 class="text-lg text-gray-300">Total</h2>
+            <p class="text-3xl font-bold text-blue-400">{{ total }}</p>
+        </div>
+
+    </div>
+
+    <!-- 🔥 QUICK ACTION -->
+    <div class="flex justify-end mb-6">
+        <a href="/complaints/create-ui/"
+           class="px-5 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg text-white shadow-lg transition">
+            ➕ Create Complaint
+        </a>
+    </div>
+
+    <!-- 🔥 KANBAN BUTTON -->
+    <div class="mb-6">
+        <a href="/complaints/kanban/"
+           class="px-5 py-3 bg-purple-500 hover:bg-purple-600 rounded-lg text-white shadow-lg transition">
+            📋 Open Kanban Board
+        </a>
+    </div>
+
+    <!-- 🔥 CHART -->
+    <div class="glass p-6">
+        <h2 class="text-xl mb-4">📈 Complaint Overview</h2>
+
+        <canvas id="chart" height="100"></canvas>
+    </div>
+
+</div>
+
+<!-- 🔥 CHART JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const ctx = document.getElementById('chart');
+
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Pending', 'In Progress', 'Resolved'],
+        datasets: [{
+            data: [{{ pending }}, {{ progress }}, {{ resolved }}],
+        }]
+    },
+});
+</script>
+
+{% endblock %}

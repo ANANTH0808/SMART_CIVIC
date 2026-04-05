@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Civic Map</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+
+        /* Floating Form */
+        .form-box {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 300px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .form-box h3 {
+            margin: 0 0 10px;
+        }
+
+        .form-box input,
+        .form-box textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .form-box button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background: #007bff;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .form-box button:hover {
+            background: #0056b3;
+        }
+
+        .status {
+            margin-top: 5px;
+            font-size: 12px;
+            color: green;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- 📝 FORM -->
+<div class="form-box">
+    <h3>🚨 Report Issue</h3>
+
+    <input type="text" id="title" placeholder="Title" />
+    <textarea id="desc" placeholder="Description"></textarea>
+
+    <button onclick="submitComplaint()">Submit</button>
+
+    <div class="status" id="statusMsg"></div>
+</div>
+
+<!-- 🗺️ MAP -->
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+    var map = L.map('map').setView([13.0827, 80.2707], 10);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    var selectedLat = null;
+    var selectedLng = null;
+    var selectedMarker;
+
+    // 📍 Click to select location
+    map.on('click', function(e) {
+        selectedLat = e.latlng.lat;
+        selectedLng = e.latlng.lng;
+
+        if (selectedMarker) {
+            map.removeLayer(selectedMarker);
+        }
+
+        selectedMarker = L.marker([selectedLat, selectedLng]).addTo(map)
+            .bindPopup("Selected Location")
+            .openPopup();
+    });
+
+    // 🚀 Submit complaint
+    function submitComplaint() {
+        var title = document.getElementById("title").value;
+        var desc = document.getElementById("desc").value;
+
+        if (!selectedLat || !selectedLng) {
+            alert("Please click on map to select location");
+            return;
+        }
+
+        fetch("http://127.0.0.1:8000/complaints/create/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer YOUR_TOKEN_HERE"
+            },
+            body: JSON.stringify({
+                title: title,
+                desc: desc,
+                latitude: selectedLat,
+                longitude: selectedLng,
+                location: "Auto",
+                status: "pending"
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("statusMsg").innerText = "✅ Complaint submitted!";
+            console.log(data);
+        });
+    }
+</script>
+
+</body>
+</html>

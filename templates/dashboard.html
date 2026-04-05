@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1 class="text-3xl mb-6">📊 Dashboard</h1>
+
+<a href="/complaints/create-ui/" class="bg-blue-500 px-4 py-2 rounded mb-4 inline-block">
+➕ Create Complaint
+</a>
+
+<div class="grid grid-cols-4 gap-6 mb-8">
+<div class="glass p-4">Total {{ total }}</div>
+<div class="glass p-4">Pending {{ pending }}</div>
+<div class="glass p-4">Progress {{ progress }}</div>
+<div class="glass p-4">Resolved {{ resolved }}</div>
+</div>
+
+<div style="max-width:400px">
+<canvas id="chart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+new Chart(document.getElementById('chart'), {
+type: 'pie',
+data: {
+labels: ['Pending','Progress','Resolved'],
+datasets: [{data: [{{ pending }}, {{ progress }}, {{ resolved }}]}]
+}
+});
+</script>
+
+{% endblock %}

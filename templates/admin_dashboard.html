@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+canvas {
+    max-height: 300px;
+}
+</style>
+
+<div class="max-w-7xl mx-auto pt-10">
+
+    <!-- 🔥 HEADER -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold">🛠 Admin Dashboard</h1>
+
+        <a href="{% url 'logout' %}"
+           class="bg-red-500 px-4 py-2 rounded text-white hover:bg-red-600">
+            Logout
+        </a>
+    </div>
+
+    <!-- 🔍 SEARCH + DATE -->
+    <form method="GET" class="flex gap-4 mb-6 flex-wrap">
+
+        <input type="text" name="q" placeholder="Search complaints..."
+               class="px-3 py-2 rounded text-black">
+
+        <input type="date" name="date"
+               class="px-3 py-2 rounded text-black">
+
+        <button class="bg-blue-500 px-4 py-2 rounded text-white">
+            Search
+        </button>
+
+    </form>
+
+    <!-- 📊 STATS -->
+    <div class="grid grid-cols-4 gap-4 mb-8">
+        <div class="glass p-4">Total: {{ total }}</div>
+        <div class="glass p-4">Pending: {{ pending }}</div>
+        <div class="glass p-4">Progress: {{ progress }}</div>
+        <div class="glass p-4">Resolved: {{ resolved }}</div>
+    </div>
+
+    <!-- 🔥 CATEGORY FILTER -->
+    <div class="flex gap-3 mb-6 flex-wrap">
+        <a href="/complaints/admin-dashboard/" class="px-4 py-2 bg-gray-600 rounded text-white">All</a>
+        <a href="?category=sanitation" class="px-4 py-2 bg-purple-500 rounded text-white">Sanitation</a>
+        <a href="?category=road" class="px-4 py-2 bg-blue-500 rounded text-white">Road</a>
+        <a href="?category=water" class="px-4 py-2 bg-cyan-500 rounded text-white">Water</a>
+        <a href="?category=general" class="px-4 py-2 bg-gray-500 rounded text-white">General</a>
+    </div>
+
+    <!-- 📊 CHARTS SIDE BY SIDE -->
+    <div class="grid md:grid-cols-2 gap-6 mb-8">
+
+        <!-- 🥧 PIE -->
+        <div class="glass p-6 rounded-xl">
+            <h2 class="text-xl mb-4">🥧 Category Distribution</h2>
+            <canvas id="pieChart"></canvas>
+        </div>
+
+        <!-- 📊 BAR -->
+        <div class="glass p-6 rounded-xl">
+            <h2 class="text-xl mb-4">📊 Category Analytics</h2>
+            <canvas id="barChart"></canvas>
+        </div>
+
+    </div>
+
+    <!-- 📋 TABLE -->
+    <div class="glass p-6 rounded-xl">
+
+        <table class="w-full text-left">
+
+            <thead>
+                <tr class="border-b border-gray-600 text-gray-300">
+                    <th class="py-2">Title</th>
+                    <th>User</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for c in complaints %}
+                <tr class="border-b border-gray-700 hover:bg-gray-800 transition">
+
+                    <td class="py-3">{{ c.title }}</td>
+                    <td>{{ c.user.username }}</td>
+
+                    <!-- CATEGORY -->
+                    <td>
+                        <span class="px-3 py-1 bg-purple-500 rounded text-white text-sm">
+                            {{ c.category|default:"general" }}
+                        </span>
+                    </td>
+
+                    <!-- STATUS -->
+                    <td>
+                        <span class="px-3 py-1 rounded text-white text-sm
+                        {% if c.status == 'pending' %} bg-red-500
+                        {% elif c.status == 'inprogress' %} bg-yellow-500
+                        {% else %} bg-green-500 {% endif %}">
+                            {{ c.status }}
+                        </span>
+                    </td>
+
+                    <!-- ACTIONS -->
+                    <td>
+                        <div class="flex gap-2 items-center">
+
+                            <!-- VIEW -->
+                            <a href="/complaints/detail/{{ c.id }}/"
+                               class="bg-green-500 px-3 py-1 rounded text-white hover:bg-green-600">
+                                View
+                            </a>
+
+                            <!-- UPDATE -->
+                            <form method="POST" action="/complaints/update/{{ c.id }}/" class="flex gap-2">
+                                {% csrf_token %}
+
+                                <select name="status" class="text-black px-2 py-1 rounded">
+                                    <option value="pending">Pending</option>
+                                    <option value="inprogress">In Progress</option>
+                                    <option value="resolved">Resolved</option>
+                                </select>
+
+                                <button class="bg-blue-500 px-3 py-1 rounded text-white hover:bg-blue-600">
+                                    Update
+                                </button>
+                            </form>
+
+                        </div>
+                    </td>
+
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-gray-400">
+                        No complaints found
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- 🔥 CHART JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+// 🥧 PIE CHART
+new Chart(document.getElementById('pieChart'), {
+    type: 'pie',
+    data: {
+        labels: ['Sanitation', 'Road', 'Water', 'General'],
+        datasets: [{
+            data: [{{ sanitation }}, {{ road }}, {{ water }}, {{ general }}],
+        }]
+    }
+});
+
+// 📊 BAR CHART
+new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Sanitation', 'Road', 'Water', 'General'],
+        datasets: [{
+            label: 'Complaints',
+            data: [{{ sanitation }}, {{ road }}, {{ water }}, {{ general }}],
+        }]
+    }
+});
+
+</script>
+
+{% endblock %}

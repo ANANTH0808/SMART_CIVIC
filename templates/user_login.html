@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="min-h-screen flex items-center justify-center">
+
+    <div class="glass p-8 w-80 text-center">
+
+        <h2 class="text-xl font-bold mb-4">👤 User Login</h2>
+
+        <form method="POST">
+    {% csrf_token %}
+
+    <input type="text" name="username" placeholder="Username"
+        class="input mb-3">
+
+    <input type="password" name="password" placeholder="Password"
+        class="input mb-4">
+
+    <button class="btn btn-blue w-full mb-3">Login</button>
+
+    <!-- 🔥 REGISTER LINK -->
+    <p class="text-sm text-gray-400">
+        Don't have an account?
+        <a href="{% url 'register' %}" 
+           class="text-blue-400 hover:underline">
+            Register
+        </a>
+    </p>
+
+</form>
+
+    </div>
+
+</div>
+
+{% endblock %}
