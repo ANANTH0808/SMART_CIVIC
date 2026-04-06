@@ -157,3 +157,5 @@ def create_ui(request):
         return redirect('/complaints/dashboard/')
 
     return render(request, 'create.html')
+def create_complaint(request):
+    return render(request, 'create.html')

@@ -16,7 +16,7 @@ urlpatterns = [
     path('pending/', pending_page),
     path('progress/', progress_page),
     path('resolved/', resolved_page),
-
+    path('create-ui/', create_complaint, name='create-complaint'),
     # 📄 DETAIL
     path('detail/<int:id>/', complaint_detail),
 ]
