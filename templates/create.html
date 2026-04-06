@@ -1,99 +1,71 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<div class="flex items-center justify-center min-h-screen">
+<div class="max-w-6xl mx-auto px-4 py-6">
 
-    <form method="POST" enctype="multipart/form-data"
-          class="glass p-8 w-96 text-center space-y-4">
+    <h2 class="text-2xl font-bold mb-6">📍 Create Complaint</h2>
 
-        {% csrf_token %}
+    <div class="grid md:grid-cols-2 gap-6">
 
-        <h2 class="text-2xl font-bold mb-4">📍 Create Complaint</h2>
+        <!-- 📝 FORM -->
+        <form method="POST" enctype="multipart/form-data" class="glass-card space-y-4">
+            {% csrf_token %}
 
-        <!-- TITLE -->
-        <input type="text" name="title"
-               placeholder="Title"
-               class="input w-full">
+            <input name="title" placeholder="Title"
+                class="w-full p-3 rounded text-black">
 
-        <!-- DESCRIPTION -->
-        <textarea name="desc"
-                  placeholder="Description"
-                  class="input w-full h-20"></textarea>
+            <input name="location" placeholder="Location"
+                class="w-full p-3 rounded text-black">
 
-        <!-- LOCATION -->
-        <input type="text" name="location"
-               placeholder="Location (click on map)"
-               class="input w-full">
+            <textarea name="desc" placeholder="Description"
+                class="w-full p-3 rounded text-black h-32"></textarea>
 
-        <!-- IMAGE UPLOAD -->
-        <input type="file" name="image"
-               class="text-white w-full">
+            <input type="file" name="image"
+                class="w-full p-2 bg-white text-black rounded">
 
-        <!-- IMAGE PREVIEW -->
-        <img id="preview"
-             class="hidden rounded w-full"
-             style="height:150px; object-fit:cover;">
+            <!-- Hidden lat/lng -->
+            <input type="hidden" name="latitude" id="lat">
+            <input type="hidden" name="longitude" id="lng">
 
-        <!-- HIDDEN LAT LNG -->
-        <input type="hidden" name="latitude" id="lat">
-        <input type="hidden" name="longitude" id="lng">
+            <button class="bg-green-500 w-full py-3 rounded btn-glow">
+                Submit Complaint
+            </button>
+        </form>
 
-        <!-- MAP -->
-        <div id="map" class="rounded"
-             style="height:250px;"></div>
+        <!-- 🗺 MAP -->
+        <div class="glass-card">
 
-        <!-- SUBMIT -->
-        <button class="btn btn-blue w-full">
-            Submit
-        </button>
+            <h3 class="mb-3">Click map to select location</h3>
 
-    </form>
+            <div id="map" class="w-full h-[400px] rounded"></div>
+
+        </div>
+
+    </div>
 
 </div>
 
-<!-- 🌍 LEAFLET MAP -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+var map = L.map('map').setView([13.08, 80.27], 12);
 
-    // 📍 MAP
-    var map = L.map('map').setView([13.0827, 80.2707], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
-        .addTo(map);
+var marker;
 
-    var marker;
+map.on('click', function(e) {
 
-    map.on('click', function(e) {
-        if (marker) map.removeLayer(marker);
-
-        marker = L.marker(e.latlng).addTo(map);
-
-        document.getElementById('lat').value = e.latlng.lat;
-        document.getElementById('lng').value = e.latlng.lng;
-
-        // Auto fill location
-        document.querySelector('[name="location"]').value =
-            "Lat: " + e.latlng.lat + ", Lng: " + e.latlng.lng;
-    });
-
-    // 🖼 IMAGE PREVIEW
-    const input = document.querySelector('input[name="image"]');
-    const preview = document.getElementById('preview');
-
-    if (input) {
-        input.addEventListener("change", function (e) {
-            const file = e.target.files[0];
-
-            if (file) {
-                preview.src = URL.createObjectURL(file);
-                preview.classList.remove('hidden');
-            }
-        });
+    if (marker) {
+        map.removeLayer(marker);
     }
 
+    marker = L.marker(e.latlng).addTo(map);
+
+    document.getElementById('lat').value = e.latlng.lat;
+    document.getElementById('lng').value = e.latlng.lng;
 });
 </script>
 

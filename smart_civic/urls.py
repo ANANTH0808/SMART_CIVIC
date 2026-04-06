@@ -21,11 +21,14 @@ from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import LogoutView
+from complaints.views import *
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('complaints/',include('complaints.urls')),
     path('',include('users.urls')),
-    
+    path('profile/',profile),
+    path('admin-login/', admin_login, name='admin-login'),
+    path('edit-profile/',edit_profile),
     path('logout/', LogoutView.as_view(next_page='/login/')),
 ]
 

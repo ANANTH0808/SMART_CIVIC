@@ -1,106 +1,129 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<style>
-canvas {
-    max-height: 300px;
-}
-</style>
-
-<div class="max-w-7xl mx-auto pt-10">
+<div class="max-w-7xl mx-auto pt-10 px-4">
 
     <!-- 🔥 HEADER -->
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+
+        <!-- TITLE -->
         <h1 class="text-3xl font-bold">🛠 Admin Dashboard</h1>
 
-        <a href="{% url 'logout' %}"
-           class="bg-red-500 px-4 py-2 rounded text-white hover:bg-red-600">
-            Logout
-        </a>
-    </div>
+        <!-- 👤 PROFILE DROPDOWN -->
+        <div class="relative">
 
-    <!-- 🔍 SEARCH + DATE -->
-    <form method="GET" class="flex gap-4 mb-6 flex-wrap">
+            <div onclick="toggleDropdown()" 
+                 class="glass p-3 rounded-xl flex items-center gap-3 cursor-pointer
+                        transition duration-300 hover:shadow-[0_0_15px_rgba(168,85,247,0.7)]">
 
-        <input type="text" name="q" placeholder="Search complaints..."
-               class="px-3 py-2 rounded text-black">
+                <!-- AVATAR -->
+                <div class="bg-purple-500 w-10 h-10 flex items-center justify-center rounded-full text-white font-bold">
+                    {{ request.user.username|first|upper }}
+                </div>
 
-        <input type="date" name="date"
-               class="px-3 py-2 rounded text-black">
+                <!-- NAME -->
+                <div class="hidden md:block">
+                    <p class="text-sm text-gray-400">Admin</p>
+                    <p class="font-semibold">{{ request.user.username }}</p>
+                </div>
 
-        <button class="bg-blue-500 px-4 py-2 rounded text-white">
-            Search
-        </button>
+                <!-- ARROW -->
+                <span>▼</span>
+            </div>
 
-    </form>
+            <!-- DROPDOWN MENU -->
+            <div id="dropdownMenu" 
+                 class="hidden absolute right-0 mt-2 w-44 glass rounded-xl shadow-lg p-2 z-50">
 
-    <!-- 📊 STATS -->
-    <div class="grid grid-cols-4 gap-4 mb-8">
-        <div class="glass p-4">Total: {{ total }}</div>
-        <div class="glass p-4">Pending: {{ pending }}</div>
-        <div class="glass p-4">Progress: {{ progress }}</div>
-        <div class="glass p-4">Resolved: {{ resolved }}</div>
-    </div>
+                <a href="/complaints/profile/" 
+                   class="block px-4 py-2 hover:bg-gray-700 rounded">
+                    👤 Profile
+                </a>
 
-    <!-- 🔥 CATEGORY FILTER -->
-    <div class="flex gap-3 mb-6 flex-wrap">
-        <a href="/complaints/admin-dashboard/" class="px-4 py-2 bg-gray-600 rounded text-white">All</a>
-        <a href="?category=sanitation" class="px-4 py-2 bg-purple-500 rounded text-white">Sanitation</a>
-        <a href="?category=road" class="px-4 py-2 bg-blue-500 rounded text-white">Road</a>
-        <a href="?category=water" class="px-4 py-2 bg-cyan-500 rounded text-white">Water</a>
-        <a href="?category=general" class="px-4 py-2 bg-gray-500 rounded text-white">General</a>
-    </div>
+                <a href="/complaints/edit-profile/" 
+                   class="block px-4 py-2 hover:bg-gray-700 rounded">
+                    ✏ Edit Profile
+                </a>
 
-    <!-- 📊 CHARTS SIDE BY SIDE -->
-    <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <hr class="my-2 border-gray-600">
 
-        <!-- 🥧 PIE -->
-        <div class="glass p-6 rounded-xl">
-            <h2 class="text-xl mb-4">🥧 Category Distribution</h2>
-            <canvas id="pieChart"></canvas>
+                <a href="/logout/" 
+                   class="block px-4 py-2 text-red-400 hover:bg-gray-700 rounded">
+                    🚪 Logout
+                </a>
+
+            </div>
+
         </div>
 
-        <!-- 📊 BAR -->
-        <div class="glass p-6 rounded-xl">
-            <h2 class="text-xl mb-4">📊 Category Analytics</h2>
+    </div>
+
+    <!-- 📊 GLOWING STATS -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+
+        <div class="glass p-4 text-center rounded-xl transition duration-300 hover:shadow-[0_0_15px_rgba(59,130,246,0.7)]">
+            <p>Total</p>
+            <p class="text-2xl font-bold text-blue-400">{{ total }}</p>
+        </div>
+
+        <div class="glass p-4 text-center rounded-xl transition duration-300 hover:shadow-[0_0_15px_rgba(239,68,68,0.7)]">
+            <p>Pending</p>
+            <p class="text-2xl font-bold text-red-400">{{ pending }}</p>
+        </div>
+
+        <div class="glass p-4 text-center rounded-xl transition duration-300 hover:shadow-[0_0_15px_rgba(234,179,8,0.7)]">
+            <p>In Progress</p>
+            <p class="text-2xl font-bold text-yellow-400">{{ progress }}</p>
+        </div>
+
+        <div class="glass p-4 text-center rounded-xl transition duration-300 hover:shadow-[0_0_15px_rgba(34,197,94,0.7)]">
+            <p>Resolved</p>
+            <p class="text-2xl font-bold text-green-400">{{ resolved }}</p>
+        </div>
+
+    </div>
+
+    <!-- 📊 CHARTS -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+
+        <!-- DOUGHNUT -->
+        <div class="glass p-4 rounded-xl">
+            <h2 class="text-xl mb-4">📊 Status Overview</h2>
+            <canvas id="statusChart"></canvas>
+        </div>
+
+        <!-- BAR -->
+        <div class="glass p-4 rounded-xl">
+            <h2 class="text-xl mb-4">📊 Status Analytics</h2>
             <canvas id="barChart"></canvas>
         </div>
 
     </div>
 
     <!-- 📋 TABLE -->
-    <div class="glass p-6 rounded-xl">
+    <div class="glass p-4 overflow-x-auto rounded-xl">
 
         <table class="w-full text-left">
 
             <thead>
-                <tr class="border-b border-gray-600 text-gray-300">
+                <tr class="border-b border-gray-600">
                     <th class="py-2">Title</th>
                     <th>User</th>
-                    <th>Category</th>
                     <th>Status</th>
-                    <th>Actions</th>
+                    <th>Action</th>
                 </tr>
             </thead>
 
             <tbody>
 
                 {% for c in complaints %}
-                <tr class="border-b border-gray-700 hover:bg-gray-800 transition">
+                <tr class="border-b border-gray-700">
 
                     <td class="py-3">{{ c.title }}</td>
                     <td>{{ c.user.username }}</td>
 
-                    <!-- CATEGORY -->
                     <td>
-                        <span class="px-3 py-1 bg-purple-500 rounded text-white text-sm">
-                            {{ c.category|default:"general" }}
-                        </span>
-                    </td>
-
-                    <!-- STATUS -->
-                    <td>
-                        <span class="px-3 py-1 rounded text-white text-sm
+                        <span class="px-2 py-1 rounded text-white text-sm
                         {% if c.status == 'pending' %} bg-red-500
                         {% elif c.status == 'inprogress' %} bg-yellow-500
                         {% else %} bg-green-500 {% endif %}">
@@ -108,27 +131,25 @@ canvas {
                         </span>
                     </td>
 
-                    <!-- ACTIONS -->
                     <td>
-                        <div class="flex gap-2 items-center">
+                        <div class="flex flex-col md:flex-row gap-2">
 
-                            <!-- VIEW -->
                             <a href="/complaints/detail/{{ c.id }}/"
-                               class="bg-green-500 px-3 py-1 rounded text-white hover:bg-green-600">
+                               class="bg-green-500 px-3 py-1 rounded text-white text-center hover:shadow-lg">
                                 View
                             </a>
 
-                            <!-- UPDATE -->
-                            <form method="POST" action="/complaints/update/{{ c.id }}/" class="flex gap-2">
+                            <form method="POST" action="{% url 'update-status' c.id %}">
                                 {% csrf_token %}
 
-                                <select name="status" class="text-black px-2 py-1 rounded">
+                                <select name="status" class="text-black px-2 py-1 rounded w-full md:w-auto">
                                     <option value="pending">Pending</option>
                                     <option value="inprogress">In Progress</option>
                                     <option value="resolved">Resolved</option>
                                 </select>
 
-                                <button class="bg-blue-500 px-3 py-1 rounded text-white hover:bg-blue-600">
+                                <button type="submit"
+                                        class="bg-blue-500 px-3 py-1 rounded text-white w-full md:w-auto hover:shadow-lg">
                                     Update
                                 </button>
                             </form>
@@ -139,7 +160,7 @@ canvas {
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" class="text-center py-4 text-gray-400">
+                    <td colspan="4" class="text-center py-4">
                         No complaints found
                     </td>
                 </tr>
@@ -157,30 +178,39 @@ canvas {
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-
-// 🥧 PIE CHART
-new Chart(document.getElementById('pieChart'), {
-    type: 'pie',
+// Doughnut
+new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
     data: {
-        labels: ['Sanitation', 'Road', 'Water', 'General'],
+        labels: ['Pending', 'In Progress', 'Resolved'],
         datasets: [{
-            data: [{{ sanitation }}, {{ road }}, {{ water }}, {{ general }}],
+            data: [{{ pending }}, {{ progress }}, {{ resolved }}],
         }]
     }
 });
 
-// 📊 BAR CHART
+// Bar
 new Chart(document.getElementById('barChart'), {
     type: 'bar',
     data: {
-        labels: ['Sanitation', 'Road', 'Water', 'General'],
+        labels: ['Pending', 'In Progress', 'Resolved'],
         datasets: [{
-            label: 'Complaints',
-            data: [{{ sanitation }}, {{ road }}, {{ water }}, {{ general }}],
+            data: [{{ pending }}, {{ progress }}, {{ resolved }}],
         }]
     }
 });
 
+// Dropdown toggle
+function toggleDropdown() {
+    document.getElementById("dropdownMenu").classList.toggle("hidden");
+}
+
+// Close on outside click
+window.onclick = function(e) {
+    if (!e.target.closest('.relative')) {
+        document.getElementById("dropdownMenu").classList.add("hidden");
+    }
+}
 </script>
 
 {% endblock %}

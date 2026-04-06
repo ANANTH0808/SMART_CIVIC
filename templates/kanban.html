@@ -1,48 +1,76 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2 class="text-2xl font-bold mb-6">🧩 Kanban Board</h2>
+<style>
+.kanban-board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
 
-<div class="grid grid-cols-3 gap-6">
+.kanban-column {
+    background: rgba(255,255,255,0.05);
+    padding: 15px;
+    border-radius: 12px;
+    min-height: 400px;
+}
 
-<!-- 🔴 Pending -->
-<div class="glass p-4">
-<h3 class="text-red-400 mb-3 font-bold">Pending</h3>
+.card {
+    background: #1f2937;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+}
+</style>
 
-{% for c in pending %}
-<a href="/complaints/detail/{{ c.id }}/">
-    <div class="glass p-3 mb-2 card cursor-pointer">
-        {{ c.title }}
+<div class="max-w-7xl mx-auto mt-10">
+
+    <a href="/complaints/dashboard/" class="bg-blue-500 px-4 py-2 rounded text-white">⬅ Back</a>
+
+    <h2 class="text-3xl font-bold mb-6">📊 Kanban Board</h2>
+
+    <div class="kanban-board">
+
+        <!-- PENDING -->
+        <div class="kanban-column">
+            <h3 class="text-xl mb-3">🟡 Pending</h3>
+            {% for c in pending %}
+                <div class="card">
+                    <b>{{ c.title }}</b><br>
+                    <a href="/complaints/detail/{{ c.id }}/">View</a>
+                </div>
+            {% empty %}
+                <p>No pending</p>
+            {% endfor %}
+        </div>
+
+        <!-- PROGRESS -->
+        <div class="kanban-column">
+            <h3 class="text-xl mb-3">🔵 In Progress</h3>
+            {% for c in progress %}
+                <div class="card">
+                    <b>{{ c.title }}</b><br>
+                    <a href="/complaints/detail/{{ c.id }}/">View</a>
+                </div>
+            {% empty %}
+                <p>No progress</p>
+            {% endfor %}
+        </div>
+
+        <!-- RESOLVED -->
+        <div class="kanban-column">
+            <h3 class="text-xl mb-3">🟢 Resolved</h3>
+            {% for c in resolved %}
+                <div class="card">
+                    <b>{{ c.title }}</b><br>
+                    <a href="/complaints/detail/{{ c.id }}/">View</a>
+                </div>
+            {% empty %}
+                <p>No resolved</p>
+            {% endfor %}
+        </div>
+
     </div>
-</a>
-{% endfor %}
-</div>
-
-<!-- 🟡 Progress -->
-<div class="glass p-4">
-<h3 class="text-yellow-400 mb-3 font-bold">In Progress</h3>
-
-{% for c in progress %}
-<a href="/complaints/detail/{{ c.id }}/">
-    <div class="glass p-3 mb-2 card cursor-pointer">
-        {{ c.title }}
-    </div>
-</a>
-{% endfor %}
-</div>
-
-<!-- 🟢 Resolved -->
-<div class="glass p-4">
-<h3 class="text-green-400 mb-3 font-bold">Resolved</h3>
-
-{% for c in resolved %}
-<a href="/complaints/detail/{{ c.id }}/">
-    <div class="glass p-3 mb-2 card cursor-pointer">
-        {{ c.title }}
-    </div>
-</a>
-{% endfor %}
-</div>
 
 </div>
 

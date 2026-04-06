@@ -2,21 +2,18 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
+    path('dashboard/', user_dashboard),
+    path('create-ui/', create_ui, name='create-complaint'),
+    path('detail/<int:id>/', detail),
+    path('comment/<int:id>/', add_comment),
 
-    # 👤 USER
-    path('dashboard/', user_dashboard, name='user-dashboard'),
+    # ✅ ONLY ONE UPDATE
+    path('update/<int:id>/', update_status, name='update-status'),
 
-    # 🛠 ADMIN
-    path('admin-dashboard/', admin_dashboard, name='admin-dashboard'),
-
-    # 🔄 UPDATE (ADMIN)
-    path('update/<int:id>/', update_complaint_ui, name='update-complaint'),
-
-    # 📄 FILTER PAGES
-    path('pending/', pending_page),
-    path('progress/', progress_page),
-    path('resolved/', resolved_page),
-    path('create-ui/', create_complaint, name='create-complaint'),
-    # 📄 DETAIL
-    path('detail/<int:id>/', complaint_detail),
+    path('kanban/', kanban),
+    path('notifications/', notifications),
+    path('profile/', profile, name='profile'),
+    path('admin-dashboard/', admin_dashboard),
+    path('edit-profile/', edit_profile, name='edit-profile'),
+    path('delete/<int:id>/', delete_complaint, name='delete-complaint'),
 ]

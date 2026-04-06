@@ -1,203 +1,116 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<div class="pt-24 pb-10 px-6 max-w-6xl mx-auto">
-
-    <!-- 🔥 STRONG HEADER (FIXED) -->
-    <div class="mb-10 p-6 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 shadow-xl">
-
-        <h1 class="text-4xl font-bold text-white mb-2">
-            {{ c.title }}
-        </h1>
-
-        <p class="text-gray-200 text-sm">
-            📅 Created on: {{ c.created_at|date:"d M Y, h:i A" }}
-        </p>
-
-        <p class="text-xs text-gray-300 mt-1">
-            Complaint ID: #{{ c.id }}
-        </p>
-
-    </div>
-
-    <div class="grid md:grid-cols-2 gap-8">
-
-        <!-- 📸 IMAGE -->
-        <div class="glass p-4 rounded-xl">
-            {% if c.image %}
-                <img src="{{ c.image.url }}"
-                     class="w-full h-80 object-cover rounded-lg shadow-lg hover:scale-105 transition duration-300">
-            {% else %}
-                <div class="flex items-center justify-center h-80 text-gray-400">
-                    📷 No Image Uploaded
-                </div>
-            {% endif %}
-        </div>
-
-        <!-- 📋 DETAILS -->
-        <div class="glass p-6 space-y-4 rounded-xl">
-
-            <p class="text-gray-300 text-lg">
-                {{ c.desc }}
-            </p>
-
-            <!-- STATUS -->
-            <p>
-                <strong>Status:</strong>
-                <span id="statusBadge"
-                    class="px-3 py-1 rounded text-white text-sm
-                    {% if c.status == 'pending' %} bg-red-500
-                    {% elif c.status == 'inprogress' %} bg-yellow-500
-                    {% else %} bg-green-500 {% endif %}">
-                    {{ c.status }}
-                </span>
-            </p>
-
-            <!-- CATEGORY -->
-            <p>
-                <strong>Category:</strong>
-                <span class="px-3 py-1 bg-blue-500 rounded text-white text-sm">
-                    {{ c.category|default:"N/A" }}
-                </span>
-            </p>
-
-            <!-- LOCATION -->
-            <p>
-                <strong>Location:</strong>
-                <span class="text-gray-400">{{ c.location }}</span>
-            </p>
-
-            <!-- 🔥 STATUS BUTTONS -->
-            <div class="flex gap-3 pt-4">
-
-                <button onclick="updateStatus('pending')" class="px-4 py-2 bg-red-500 rounded text-white hover:scale-105 transition">
-                    Pending
-                </button>
-
-                <button onclick="updateStatus('inprogress')" class="px-4 py-2 bg-yellow-500 rounded text-white hover:scale-105 transition">
-                    In Progress
-                </button>
-
-                <button onclick="updateStatus('resolved')" class="px-4 py-2 bg-green-500 rounded text-white hover:scale-105 transition">
-                    Resolved
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- 🚀 TIMELINE -->
-    <div class="glass p-6 mt-10 rounded-xl">
-        <h3 class="text-xl mb-6">🚀 Status Timeline</h3>
-
-        <div class="flex items-center justify-between">
-
-            <div class="text-center flex-1">
-                <div class="circle bg-red-500 {% if c.status != 'pending' %}opacity-40{% endif %}"></div>
-                <p class="mt-2">Pending</p>
-            </div>
-
-            <div class="line"></div>
-
-            <div class="text-center flex-1">
-                <div class="circle bg-yellow-500 {% if c.status != 'inprogress' %}opacity-40{% endif %}"></div>
-                <p class="mt-2">In Progress</p>
-            </div>
-
-            <div class="line"></div>
-
-            <div class="text-center flex-1">
-                <div class="circle bg-green-500 {% if c.status != 'resolved' %}opacity-40{% endif %}"></div>
-                <p class="mt-2">Resolved</p>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- 🗺️ MAP -->
-    <div class="glass p-5 mt-10 rounded-xl">
-        <h3 class="text-xl mb-4">📍 Location Map</h3>
-        <div id="map" style="height:400px;" class="rounded"></div>
-    </div>
-
-</div>
-
-<!-- 🔔 TOAST -->
-<div id="toast" class="fixed bottom-5 right-5 hidden bg-green-500 text-white px-5 py-3 rounded-lg shadow-lg">
-    Status Updated Successfully ✅
-</div>
-
-<!-- 🌍 LEAFLET -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 <style>
-.circle {
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    margin: auto;
+.glass-card {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.4);
 }
-.line {
-    flex: 1;
-    height: 3px;
-    background: #555;
-    margin: 0 10px;
+
+.btn-glow:hover {
+    box-shadow: 0 0 15px rgba(59,130,246,0.7);
+}
+
+.img-glow:hover {
+    box-shadow: 0 0 25px rgba(59,130,246,0.7);
+    transform: scale(1.03);
+}
+
+.transition {
+    transition: all 0.3s ease;
 }
 </style>
 
+<div class="max-w-5xl mx-auto px-4 py-6">
+
+    <div class="glass-card space-y-4">
+
+       {% if request.user.is_superuser %}
+    <a href="/complaints/admin-dashboard/" 
+       class="bg-blue-500 px-3 py-1 rounded text-white">
+        ⬅ Back
+    </a>
+{% else %}
+    <a href="/complaints/dashboard/" 
+       class="bg-blue-500 px-3 py-1 rounded text-white">
+        ⬅ Back
+    </a>
+{% endif %}
+
+        <!-- 📝 TITLE -->
+        <h2 class="text-3xl font-bold">{{ c.title }}</h2>
+
+        <!-- 📄 DESCRIPTION -->
+        <p class="text-gray-300">{{ c.desc }}</p>
+
+        <!-- 📅 DATE -->
+        <p class="text-sm">📅 {{ c.created_at }}</p>
+
+        <!-- 📍 LOCATION -->
+        <p class="text-sm">📍 {{ c.location }}</p>
+
+        <!-- 🏷 CATEGORY -->
+        <p class="text-sm">
+            🏷 Category: 
+            <span class="bg-yellow-400 text-black px-2 py-1 rounded">
+                {{ c.category|title }}
+            </span>
+        </p>
+
+        <!-- 🔥 IMAGE + MAP -->
+        <div class="grid md:grid-cols-2 gap-6 mt-4">
+
+            <!-- 📸 IMAGE -->
+            <div>
+                <h3 class="mb-2 text-lg font-semibold">📸 Image</h3>
+
+                {% if c.image %}
+                    <img src="{{ c.image.url }}" 
+                         class="w-full h-72 object-cover rounded-lg border border-gray-600 img-glow transition">
+                {% else %}
+                    <p class="text-gray-400">No image uploaded</p>
+                {% endif %}
+            </div>
+
+            <!-- 🗺 MAP -->
+            <div>
+                <h3 class="mb-2 text-lg font-semibold">📍 Location</h3>
+                <div id="map" class="w-full h-72 rounded-lg shadow-lg"></div>
+            </div>
+
+        </div>
+
+        <!-- 🗑 DELETE BUTTON -->
+        <form method="POST" action="/complaints/delete/{{ c.id }}/">
+            {% csrf_token %}
+            <button class="bg-red-500 px-4 py-2 rounded text-white btn-glow transition mt-4">
+                🗑 Delete Complaint
+            </button>
+        </form>
+
+    </div>
+
+</div>
+
+<!-- 🌍 LEAFLET -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
 <script>
-document.addEventListener("DOMContentLoaded", function(){
+var lat = {{ c.latitude|default:13.08 }};
+var lng = {{ c.longitude|default:80.27 }};
 
-    var lat = {{ c.latitude|default:0 }};
-    var lng = {{ c.longitude|default:0 }};
+var map = L.map('map').setView([lat, lng], 13);
 
-    if(lat && lng){
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+    .addTo(map);
 
-        var map = L.map('map').setView([lat, lng], 13);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
-            .addTo(map);
-
-        L.marker([lat, lng]).addTo(map)
-            .bindPopup("📍 Complaint Location")
-            .openPopup();
-
-    } else {
-        document.getElementById("map").innerHTML =
-            "<p class='text-gray-400 text-center mt-20'>No location available</p>";
-    }
-
-});
-
-// 🔥 STATUS UPDATE
-function updateStatus(status){
-
-    fetch(`/complaints/update/{{ c.id }}/?status=${status}`)
-    .then(() => {
-
-        let badge = document.getElementById("statusBadge");
-        badge.innerText = status;
-
-        badge.className = "px-3 py-1 rounded text-white";
-
-        if(status === "pending") badge.classList.add("bg-red-500");
-        else if(status === "inprogress") badge.classList.add("bg-yellow-500");
-        else badge.classList.add("bg-green-500");
-
-        let toast = document.getElementById("toast");
-        toast.classList.remove("hidden");
-
-        setTimeout(() => {
-            toast.classList.add("hidden");
-            location.reload();
-        }, 1500);
-
-    });
-
-}
+L.marker([lat, lng]).addTo(map)
+    .bindPopup("📍 {{ c.location }}")
+    .openPopup();
 </script>
 
 {% endblock %}

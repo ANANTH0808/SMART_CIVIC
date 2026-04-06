@@ -1,21 +1,23 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<div class="text-center glass p-10">
+<div class="flex items-center justify-center h-[80vh]">
 
-<h1 class="text-4xl font-bold mb-4">🚀 Smart Civic</h1>
+    <div class="grid md:grid-cols-2 gap-10 w-full max-w-3xl">
 
-<p class="mb-6">Report issues. Track progress.</p>
+        <!-- USER -->
+        <a href="/userlogin/" 
+           class="glass-card text-center p-10 text-xl font-bold hover:bg-blue-500/20">
+            👤 USER PANEL
+        </a>
 
-<div class="space-y-3">
+        <!-- ADMIN -->
+        <a href="/adminlogin/" 
+           class="glass-card text-center p-10 text-xl font-bold hover:bg-red-500/20">
+            🛠 ADMIN PANEL
+        </a>
 
-<a href="/user-login/" class="btn btn-blue block">👤 User Login</a>
-
-<a href="/admin-login/" class="btn btn-red block">👨‍💼 Admin Login</a>
-
-<a href="/register/" class="btn btn-green block">Register</a>
-
-</div>
+    </div>
 
 </div>
 
