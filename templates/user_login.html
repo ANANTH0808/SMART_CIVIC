@@ -1,27 +1,48 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<div class="flex justify-center items-center h-[80vh]">
+<style>
+.glass-card {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.4);
+}
+.btn-glow:hover {
+    box-shadow: 0 0 15px rgba(59,130,246,0.8);
+}
+</style>
 
-<div class="glass-card w-80">
+<div class="flex items-center justify-center min-h-screen">
 
-<h2 class="mb-4 text-center">User Login</h2>
+    <div class="glass-card w-96 text-center">
 
-<form method="POST">
-{% csrf_token %}
+        <h2 class="text-3xl font-bold mb-6">User Login</h2>
 
-<input name="username" placeholder="Username" class="input mb-2">
-<input name="password" type="password" placeholder="Password" class="input mb-4">
+        {% if error %}
+            <p class="text-red-400 mb-3">{{ error }}</p>
+        {% endif %}
 
-<button class="btn btn-green w-full">Login</button>
+        <form method="POST">
+            {% csrf_token %}
 
-</form>
+            <input type="text" name="username" placeholder="Username"
+                   class="w-full p-3 mb-3 rounded bg-gray-800 text-white outline-none">
 
-<p class="text-center mt-3">
-No account? <a href="/register/" class="text-blue-400">Register</a>
-</p>
+            <input type="password" name="password" placeholder="Password"
+                   class="w-full p-3 mb-4 rounded bg-gray-800 text-white outline-none">
 
-</div>
+            <button class="bg-blue-500 w-full py-2 rounded text-white btn-glow transition">
+                Login
+            </button>
+        </form>
+
+        <p class="mt-4 text-gray-300">
+            No account? <a href="/register/" class="text-blue-400">Register</a>
+        </p>
+
+    </div>
 
 </div>
 

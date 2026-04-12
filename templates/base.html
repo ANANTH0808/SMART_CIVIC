@@ -3,95 +3,107 @@
 <head>
     <title>Smart Civic</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- FONT -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-        }
+        body { font-family: 'Poppins', sans-serif; }
 
-        /* 🌟 GLASS CARD */
         .glass-card {
-            background: rgba(255,255,255,0.08);
-            backdrop-filter: blur(12px);
+            background: rgba(255,255,255,0.07);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255,255,255,0.08);
             border-radius: 16px;
             padding: 16px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.3);
             transition: all 0.3s ease;
         }
-
-        /* 🔥 HOVER GLOW */
         .glass-card:hover {
-            transform: translateY(-6px) scale(1.02);
-            box-shadow: 0 0 15px rgba(59,130,246,0.6),
-                        0 0 30px rgba(59,130,246,0.4),
-                        0 0 45px rgba(59,130,246,0.2);
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 0 20px rgba(59,130,246,0.5),
+                        0 0 40px rgba(59,130,246,0.25);
+            border-color: rgba(59,130,246,0.3);
         }
 
-        /* ⚡ BUTTON GLOW */
-        .btn-glow {
-            transition: all 0.3s ease;
+        /* used in admin_dashboard.html */
+        .glass {
+            background: rgba(255,255,255,0.07);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255,255,255,0.08);
         }
 
+        .btn-glow { transition: all 0.3s ease; }
         .btn-glow:hover {
-            box-shadow: 0 0 10px rgba(34,197,94,0.7),
-                        0 0 20px rgba(34,197,94,0.5);
-            transform: scale(1.05);
+            box-shadow: 0 0 12px rgba(34,197,94,0.7), 0 0 24px rgba(34,197,94,0.4);
+            transform: scale(1.04);
         }
 
-        /* 💎 STATUS GLOW */
-        .status-pending {
-            background: #ef4444;
-            box-shadow: 0 0 10px rgba(239,68,68,0.7);
-        }
+        .status-pending  { background:#ef4444; box-shadow:0 0 8px rgba(239,68,68,0.7); }
+        .status-progress { background:#f59e0b; box-shadow:0 0 8px rgba(245,158,11,0.7); }
+        .status-done     { background:#22c55e; box-shadow:0 0 8px rgba(34,197,94,0.7); }
 
-        .status-progress {
-            background: #f59e0b;
-            box-shadow: 0 0 10px rgba(245,158,11,0.7);
+        /* navbar link underline animation */
+        .nav-link {
+            position: relative;
+            padding-bottom: 2px;
         }
-
-        .status-done {
-            background: #22c55e;
-            box-shadow: 0 0 10px rgba(34,197,94,0.7);
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 0; height: 2px;
+            background: #60a5fa;
+            transition: width 0.25s ease;
+            border-radius: 2px;
         }
-
+        .nav-link:hover::after { width: 100%; }
     </style>
 </head>
 
-<body class="bg-gradient-to-br from-slate-900 to-slate-800 text-white min-h-screen">
+<body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white min-h-screen">
 
- {% if user.is_authenticated %}
-<!-- 🔝 NAVBAR -->
-<div class="flex justify-between items-center px-6 py-3">
+{% if user.is_authenticated %}
+<nav class="sticky top-0 z-50 backdrop-blur-md bg-slate-900/70 border-b border-white/10 px-6 py-3">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
 
-    <!-- LEFT: LOGO -->
-    <h1 class="text-lg font-semibold tracking-wide">
-        🚀 Smart Civic
-    </h1>
+        <!-- LOGO -->
+        <a href="/" class="flex items-center gap-2 font-bold text-lg tracking-wide text-white">
+            <span class="bg-blue-500 text-white text-xs px-2 py-0.5 rounded font-semibold">SC</span>
+            Smart Civic
+        </a>
 
-    <!-- RIGHT: LINKS -->
-    <div class="flex items-center gap-5 text-sm">
+        <!-- LINKS -->
+        <div class="flex items-center gap-6 text-sm font-medium">
 
-       
+            {% if user.is_superuser %}
+                <!-- ADMIN NAV -->
+                <a href="/complaints/admin-dashboard/" class="nav-link text-yellow-400 hover:text-yellow-300 transition">Admin Dashboard</a>
+                <a href="/complaints/kanban/" class="nav-link hover:text-blue-400 transition">Kanban</a>
+            {% else %}
+                <!-- USER NAV -->
+                <a href="/complaints/dashboard/" class="nav-link hover:text-blue-400 transition">Dashboard</a>
+                <a href="/complaints/kanban/" class="nav-link hover:text-blue-400 transition">Kanban</a>
+                <a href="/complaints/notifications/" class="nav-link hover:text-blue-400 transition">Notifications</a>
+                <a href="/complaints/profile/" class="nav-link hover:text-blue-400 transition">Profile</a>
+            {% endif %}
 
-            <a href="/complaints/dashboard/" class="hover:text-blue-400 transition">Dashboard</a>
-            <a href="/complaints/kanban/" class="hover:text-blue-400 transition">Kanban</a>
-            <a href="/complaints/notifications/" class="hover:text-blue-400 transition">Notifications</a>
-            <a href="/profile/" class="hover:text-blue-400 transition">Profile</a>
+            <!-- ROLE BADGE -->
+            <span class="px-2 py-0.5 rounded text-xs font-semibold
+                {% if user.is_superuser %}bg-yellow-500/20 text-yellow-400 border border-yellow-500/30
+                {% else %}bg-blue-500/20 text-blue-400 border border-blue-500/30{% endif %}">
+                {% if user.is_superuser %}Admin{% else %}Citizen{% endif %}
+            </span>
 
-            <a href="/logout/" class="text-red-400 hover:text-red-300 transition">
+            <!-- LOGOUT -->
+            <a href="/logout/" class="bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1 rounded-full text-xs hover:bg-red-500/30 transition">
                 Logout
-            </a>        
+            </a>
 
+        </div>
     </div>
-    {% endif %}
+</nav>
+{% endif %}
 
-</div>
 {% block content %}{% endblock %}
 
 </body>
