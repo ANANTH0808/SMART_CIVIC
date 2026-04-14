@@ -104,41 +104,5 @@ User (Django built-in)
 
 ## Live Demo
 
-> [Smart Civic on Render](https://smart-civic.onrender.com) ← replace with your actual URL after deploying
+https://smart-civic.onrender.com
 
----
-
-## Resume Points (for freshers)
-
-- Built a **full-stack Django web app** with role-based access control (citizen vs admin)
-- Designed a **normalised relational database** with ForeignKey constraints and indexes for query performance
-- Migrated from **SQLite to PostgreSQL** for production deployment on Render
-- Configured **WhiteNoise** for zero-cost static file serving in production
-- Exposed a **REST API secured with JWT** alongside the session-based HTML interface
-- Implemented **auto-categorisation** of complaints using keyword matching
-- Achieved **pagination and aggregated queries** to avoid N+1 database problems
-
----
-
-## Project Structure
-
-```
-smart_civic/
-├── complaints/          # Main app: models, views, templates
-│   ├── migrations/
-│   ├── models.py        # Complaint, Comment, Notification
-│   ├── views.py
-│   ├── urls.py
-│   └── admin.py
-├── users/               # Auth app: register, login, logout
-├── templates/           # All HTML templates (shared base.html)
-├── smart_civic/         # Django project config
-│   ├── settings.py      # Reads secrets from env vars
-│   ├── urls.py
-│   └── wsgi.py
-├── requirements.txt
-├── Procfile
-├── build.sh             # Render build script
-├── render.yaml          # One-click Render deploy config
-└── .env.example         # Template for local .env file
-```
