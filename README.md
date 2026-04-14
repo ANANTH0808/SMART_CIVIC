@@ -104,5 +104,5 @@ User (Django built-in)
 
 ## Live Demo
 
-https://smart-civic.onrender.com
+https:https://smart-civic-1.onrender.com/
 
