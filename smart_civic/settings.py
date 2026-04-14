@@ -83,13 +83,17 @@ DATABASE_URL = os.environ.get('DATABASE_URL', '')
 
 if DATABASE_URL:
     import dj_database_url
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=DATABASE_URL,
-            conn_max_age=600,       # keep connections alive for 10 min
-            conn_health_checks=True,
-        )
-    }
+    _db = dj_database_url.config(
+        default=DATABASE_URL,
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+    # Force all table references to resolve in the public schema.
+    # Render's PostgreSQL sets search_path to the user's own schema by default,
+    # which causes "relation auth_user does not exist" FK errors.
+    _db.setdefault('OPTIONS', {})
+    _db['OPTIONS']['options'] = '-c search_path=public'
+    DATABASES = {'default': _db}
 else:
     DATABASES = {
         'default': {
