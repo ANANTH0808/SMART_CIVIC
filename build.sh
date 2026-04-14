@@ -7,15 +7,18 @@ pip install -r requirements.txt
 python manage.py collectstatic --no-input
 
 # ---------------------------------------------------------------------------
-# Repair inconsistent migration state.
+# Smart migration state repair.
 #
-# Problem: a previous failed deploy can commit rows to django_migrations for
-# 'auth' and 'contenttypes' WITHOUT the actual tables existing (because the
-# FK constraint step rolled back after the INSERT into django_migrations was
-# already committed in a separate sub-transaction).
+# Multiple failed deploys can leave the database in a mixed state:
+#   - some tables exist (their transactions committed)
+#   - some tables are missing (their transactions rolled back)
+#   - django_migrations may or may not have matching records
 #
-# Fix: if auth_user table is missing but django_migrations claims auth was
-# applied, delete those stale records so Django re-runs the migrations.
+# Strategy:
+#   1. Check which key tables actually exist in the database.
+#   2. DELETE django_migrations records ONLY for apps whose tables are missing.
+#      (Keeping records for tables that exist stops Django re-creating them.)
+#   3. Run migrate --fake-initial as a safety net for any remaining mismatch.
 # ---------------------------------------------------------------------------
 python - <<'PYEOF'
 import os, django
@@ -24,7 +27,14 @@ django.setup()
 
 from django.db import connection
 
-APPS_TO_RESET = ('auth', 'contenttypes', 'admin', 'sessions', 'complaints')
+# Map each Django app to one representative table that proves it was migrated.
+APP_TABLE = {
+    'contenttypes': 'django_content_type',
+    'auth':         'auth_user',
+    'admin':        'django_admin_log',
+    'sessions':     'django_session',
+    'complaints':   'complaints_complaint',
+}
 
 def table_exists(cursor, name):
     cursor.execute(
@@ -38,22 +48,35 @@ def table_exists(cursor, name):
 
 try:
     with connection.cursor() as cur:
-        if not table_exists(cur, 'auth_user'):
-            print("auth_user is missing — cleaning stale migration records ...")
+        missing = [app for app, tbl in APP_TABLE.items() if not table_exists(cur, tbl)]
+
+        if not missing:
+            print("All key tables exist — migration state looks healthy.")
+        else:
+            print(f"Missing tables for apps: {missing}")
+
+            # If a core app (auth/contenttypes) is missing, dependent apps
+            # must also be re-migrated even if their tables happen to exist.
+            if 'auth' in missing or 'contenttypes' in missing:
+                for dep in ('admin', 'sessions', 'complaints'):
+                    if dep not in missing:
+                        missing.append(dep)
+
             try:
-                placeholders = ', '.join(['%s'] * len(APPS_TO_RESET))
+                placeholders = ', '.join(['%s'] * len(missing))
                 cur.execute(
                     f"DELETE FROM django_migrations WHERE app IN ({placeholders})",
-                    list(APPS_TO_RESET),
+                    missing,
                 )
-                print(f"Removed stale records for: {APPS_TO_RESET}")
-            except Exception:
-                print("django_migrations table not found — fresh database, nothing to clean.")
-        else:
-            print("auth_user exists — migration state is consistent, nothing to repair.")
+                print(f"Cleared stale records for: {missing}")
+                print("Django will now re-apply those migrations cleanly.")
+            except Exception as ex:
+                print(f"Could not clean django_migrations (may not exist yet): {ex}")
+
 except Exception as exc:
     print(f"Migration state check skipped: {exc}")
 PYEOF
 
-# Run all migrations (auth tables will now be created fresh if needed)
-python manage.py migrate
+# --fake-initial: if an initial migration's tables already exist, mark it as
+# applied without re-running it (handles any remaining edge-case mismatches).
+python manage.py migrate --fake-initial
