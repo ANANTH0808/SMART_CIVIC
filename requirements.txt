@@ -1,38 +1,30 @@
-asgiref==3.11.1
-babel==2.18.0
-certifi==2026.1.4
-chardet==5.2.0
-charset-normalizer==3.4.4
-colorama==0.4.6
-distlib==0.4.0
+# Core Django
 Django==5.2.11
+asgiref==3.11.1
+
+# REST API + JWT
 djangorestframework==3.17.0
 djangorestframework_simplejwt==5.5.1
-docopt==0.6.2
-filelock==3.25.0
-gunicorn==25.3.0
-idna==3.11
-lxml==6.0.2
-lxml_html_clean==0.4.3
-MarkupSafe==3.0.3
-num2words==0.5.14
-packaging==26.0
-passlib==1.7.4
-pillow==12.1.0
-platformdirs==4.9.2
-polib==1.2.0
-psutil==7.2.2
-psycopg2-binary==2.9.11
 PyJWT==2.12.1
-python-dateutil==2.9.0.post0
-python-discovery==1.1.0
-pytz==2025.2
-qrcode==8.2
-requests==2.32.5
-six==1.17.0
+
+# Production server
+gunicorn==25.3.0
+
+# Static files (WhiteNoise serves them on Render)
+whitenoise==6.9.0
+
+# PostgreSQL adapter (psycopg2-binary works without compiling C extension)
+psycopg2-binary==2.9.11
+
+# Parse DATABASE_URL from Render environment
+dj-database-url==2.3.0
+
+# Image uploads
+Pillow==12.1.0
+
+# Utilities
 sqlparse==0.5.5
-typing_extensions==4.15.0
+python-dateutil==2.9.0.post0
+pytz==2025.2
 tzdata==2025.3
-urllib3==2.6.3
-virtualenv==21.1.0
-Werkzeug==3.1.5
+requests==2.32.5
