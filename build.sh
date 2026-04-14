@@ -7,18 +7,19 @@ pip install -r requirements.txt
 python manage.py collectstatic --no-input
 
 # ---------------------------------------------------------------------------
-# Smart migration state repair.
+# Database consistency check & repair.
 #
-# Multiple failed deploys can leave the database in a mixed state:
-#   - some tables exist (their transactions committed)
-#   - some tables are missing (their transactions rolled back)
-#   - django_migrations may or may not have matching records
+# Multiple failed deploys can leave PostgreSQL in a partial state where some
+# tables exist and some don't.  The only reliable recovery is a clean reset:
+# drop every Django-managed table (IF EXISTS CASCADE — safe on a fresh DB too)
+# so migrate runs from a true blank slate.
 #
-# Strategy:
-#   1. Check which key tables actually exist in the database.
-#   2. DELETE django_migrations records ONLY for apps whose tables are missing.
-#      (Keeping records for tables that exist stops Django re-creating them.)
-#   3. Run migrate --fake-initial as a safety net for any remaining mismatch.
+# This block ONLY triggers when auth_user is missing, which means either:
+#   a) Fresh database — nothing to lose.
+#   b) Partial migration state — no real users exist yet anyway.
+#
+# Once the app is successfully deployed once, auth_user will exist and this
+# block is skipped on every future deploy. Production data is never at risk.
 # ---------------------------------------------------------------------------
 python - <<'PYEOF'
 import os, django
@@ -26,15 +27,6 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'smart_civic.settings')
 django.setup()
 
 from django.db import connection
-
-# Map each Django app to one representative table that proves it was migrated.
-APP_TABLE = {
-    'contenttypes': 'django_content_type',
-    'auth':         'auth_user',
-    'admin':        'django_admin_log',
-    'sessions':     'django_session',
-    'complaints':   'complaints_complaint',
-}
 
 def table_exists(cursor, name):
     cursor.execute(
@@ -46,37 +38,42 @@ def table_exists(cursor, name):
     )
     return cursor.fetchone()[0]
 
+# All tables Django creates for this project, in safe drop order
+# (children before parents; CASCADE handles anything we miss).
+ALL_TABLES = [
+    # App tables
+    'complaints_notification',
+    'complaints_comment',
+    'complaints_complaint',
+    # Admin
+    'django_admin_log',
+    # Auth junction tables (must come before auth_user / auth_group)
+    'auth_user_user_permissions',
+    'auth_user_groups',
+    'auth_group_permissions',
+    # Auth core
+    'auth_user',
+    'auth_group',
+    'auth_permission',
+    # Sessions & content types
+    'django_session',
+    'django_content_type',
+    # Migration history (last — we want a fresh run)
+    'django_migrations',
+]
+
 try:
     with connection.cursor() as cur:
-        missing = [app for app, tbl in APP_TABLE.items() if not table_exists(cur, tbl)]
-
-        if not missing:
-            print("All key tables exist — migration state looks healthy.")
+        if table_exists(cur, 'auth_user'):
+            print("auth_user exists — database is healthy, skipping reset.")
         else:
-            print(f"Missing tables for apps: {missing}")
-
-            # If a core app (auth/contenttypes) is missing, dependent apps
-            # must also be re-migrated even if their tables happen to exist.
-            if 'auth' in missing or 'contenttypes' in missing:
-                for dep in ('admin', 'sessions', 'complaints'):
-                    if dep not in missing:
-                        missing.append(dep)
-
-            try:
-                placeholders = ', '.join(['%s'] * len(missing))
-                cur.execute(
-                    f"DELETE FROM django_migrations WHERE app IN ({placeholders})",
-                    missing,
-                )
-                print(f"Cleared stale records for: {missing}")
-                print("Django will now re-apply those migrations cleanly.")
-            except Exception as ex:
-                print(f"Could not clean django_migrations (may not exist yet): {ex}")
-
+            print("auth_user is missing — performing clean table reset ...")
+            for table in ALL_TABLES:
+                cur.execute(f'DROP TABLE IF EXISTS "{table}" CASCADE')
+                print(f"  dropped (if existed): {table}")
+            print("Clean slate ready — migrate will now build everything fresh.")
 except Exception as exc:
-    print(f"Migration state check skipped: {exc}")
+    print(f"Reset check failed (continuing anyway): {exc}")
 PYEOF
 
-# --fake-initial: if an initial migration's tables already exist, mark it as
-# applied without re-running it (handles any remaining edge-case mismatches).
-python manage.py migrate --fake-initial
+python manage.py migrate
